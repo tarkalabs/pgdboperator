@@ -1,0 +1,3 @@
+apiVersion: kube.tarkalabs.com/v1alpha1
+kind: Database
+projectName: pgdboperator
