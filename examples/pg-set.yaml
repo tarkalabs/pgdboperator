@@ -1,0 +1,27 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: pgdatabase
+spec:
+  serviceName: “postgres”
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres01
+        image: postgres
+        ports:
+        - containerPort: 5432
+          name: pgport
+        env:
+        - name: POSTGRES_PASSWORD
+          value: “Password123!”
+        volumeMounts:
+        - name: pgvolume
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - emptyDir: {}
+        name: pgvolume

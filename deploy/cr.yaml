@@ -2,3 +2,8 @@ apiVersion: "kube.tarkalabs.com/v1alpha1"
 kind: "Database"
 metadata:
   name: "example"
+
+spec:
+  name: "example"
+  instance: instance_secret
+  outputSecret: example_secret

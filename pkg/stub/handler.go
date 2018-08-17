@@ -18,19 +18,45 @@ func NewHandler() sdk.Handler {
 }
 
 type Handler struct {
-	// Fill me
+	PGHandler
 }
 
 func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 	switch o := event.Object.(type) {
 	case *v1alpha1.Database:
-		err := sdk.Create(newbusyBoxPod(o))
+		err := sdk.Create(newPGDSNSecret(o))
 		if err != nil && !errors.IsAlreadyExists(err) {
 			logrus.Errorf("Failed to create busybox pod : %v", err)
 			return err
 		}
 	}
 	return nil
+}
+
+func newPGDSNSecret(cr *v1alpha1.Database, dsn string) *v1.Secret {
+	return &v1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "dbname-secret",
+			OwnerReferences: []metav1.OwnerReference{
+				*metav1.NewControllerRef(cr, schema.GroupVersionKind{
+					Group:   v1alpha1.SchemeGroupVersion.Group,
+					Version: v1alpha1.SchemeGroupVersion.Version,
+					Kind:    "Database",
+				}),
+			},
+			Labels: map[string]string{
+				"pgdb":    cr.Spec.Name,
+				"creator": "pgdb",
+			},
+		},
+		StringData: map[string]string{
+			"dsn": dsn,
+		},
+	}
 }
 
 // newbusyBoxPod demonstrates how to create a busybox pod
